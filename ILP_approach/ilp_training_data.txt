@@ -1,0 +1,42 @@
+000000000000000
+000000000000000
+000000000111000
+000000001111000
+011000011111000
+011100111111000
+011111111111100
+001111111111100
+000111111111100
+000111111111100
+000111111111100
+000111111100000
+000111111000000
+000111100000000
+000000000000000
+
+Drill placed at (2,9)
+Drill placed at (2,11)
+Drill placed at (3,7)
+Drill placed at (4,0)
+Drill placed at (4,2)
+Drill placed at (4,9)
+Drill placed at (4,11)
+Drill placed at (5,5)
+Drill placed at (5,7)
+Drill placed at (6,1)
+Drill placed at (6,3)
+Drill placed at (6,10)
+Drill placed at (6,12)
+Drill placed at (7,5)
+Drill placed at (7,7)
+Drill placed at (8,3)
+Drill placed at (8,9)
+Drill placed at (8,11)
+Drill placed at (9,7)
+Drill placed at (10,3)
+Drill placed at (10,5)
+Drill placed at (10,9)
+Drill placed at (10,11)
+Drill placed at (11,7)
+Drill placed at (12,3)
+Drill placed at (12,5)
