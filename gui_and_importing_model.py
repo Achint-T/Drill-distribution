@@ -31,18 +31,7 @@ class GridApp:
         
         self.controls_frame = tk.Frame(root)
         self.controls_frame.pack()
-        
-        tk.Label(self.controls_frame, text="Rows:").pack(side=tk.LEFT)
-        self.row_entry = tk.Entry(self.controls_frame, width=5)
-        self.row_entry.pack(side=tk.LEFT)
-        self.row_entry.insert(0, "15")
-        
-        tk.Label(self.controls_frame, text="Cols:").pack(side=tk.LEFT)
-        self.col_entry = tk.Entry(self.controls_frame, width=5)
-        self.col_entry.pack(side=tk.LEFT)
-        self.col_entry.insert(0, "15")
-        
-        tk.Button(self.controls_frame, text="Set Grid", command=self.update_grid).pack(side=tk.LEFT)
+
         tk.Button(self.controls_frame, text="Submit", command=self.submit_data).pack(side=tk.LEFT)
         
         self.grid_frame = tk.Frame(root)
@@ -69,14 +58,6 @@ class GridApp:
                 btn.grid(row=r, column=c)
                 row_buttons.append(btn)
             self.buttons.append(row_buttons)
-
-    def update_grid(self):
-        try:
-            self.rows = check_status(int(self.row_entry.get()))
-            self.cols = check_status(int(self.col_entry.get()))
-            self.create_grid()
-        except ValueError:
-            pass  # Ignore invalid input
     
     def submit_data(self):
         global ore_grid
