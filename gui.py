@@ -1,6 +1,4 @@
 import tkinter as tk
-from keras import models
-import numpy as np
 
 def center_grid(grid, rows, columns):
     add_rows = int((17-rows)/2)
@@ -11,15 +9,6 @@ def center_grid(grid, rows, columns):
 
 def check_status(number):
     return max(5,min(number, 15))
-
-def get_max_index(data):
-    max = 0
-    index = 0
-    for x in range(len(data)):
-        if data[x] > max:
-            max = data[x]
-            index = x
-    return index
 
 class GridApp:
     def __init__(self, root):
@@ -39,8 +28,9 @@ class GridApp:
         self.create_grid()
 
     def toggle_tile(self, row, col):
-        self.grid_state[row][col] = 1 - self.grid_state[row][col] 
-        color = "black" if self.grid_state[row][col] else "white"
+        colours = ['white','blue','red']
+        self.grid_state[row][col] = (self.grid_state[row][col] + 1)%3
+        color = colours[self.grid_state[row][col]]
         self.buttons[row][col].config(bg=color)
 
     def create_grid(self):
@@ -62,36 +52,3 @@ class GridApp:
     def submit_data(self):
         global ore_grid
         ore_grid = center_grid(self.grid_state, self.rows, self.cols)
-
-drill_grid = [[0]*17 for _ in range(17)]
-action_list = []
-
-root = tk.Tk()
-root.title("Grid Toggle GUI")
-app = GridApp(root)
-root.mainloop()
-
-RL_trained = models.load_model('RL_approach/models/500.keras')
-
-for x in range(10):
-    result = RL_trained.predict(np.expand_dims(np.stack((np.array(ore_grid), np.array(drill_grid)), axis=-1), axis=0))
-    data = np.ndarray.tolist(result)[0]
-
-    action = int(np.argmax(data))
-
-    y = int(action/16)
-    x = action%16
-
-    print(y,x)
-
-    action_list.append([y,x])
-
-    if action==256:
-        break
-    
-    drill_grid[y][x] = 1
-    drill_grid[y][x+1] = .75
-    drill_grid[y+1][x] = .5
-    drill_grid[y+1][x+1] = .25
-
-

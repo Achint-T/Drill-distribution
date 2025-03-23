@@ -4,6 +4,31 @@ from copy import copy
 from collections import deque
 import multiprocessing
 
+def trim_grid(grid):
+    column_sum = np.sum(grid, axis=0)
+    row_sum = np.sum(grid, axis=1)
+
+    if not column_sum.any():
+        return [100]
+
+    while not column_sum[1]:
+        grid = np.delete(grid, 0, 1)
+        column_sum = column_sum[1:]
+
+    while not row_sum[1]:
+        grid = np.delete(grid, 0, 0)
+        row_sum = row_sum[1:]
+
+    while not column_sum[-2]:
+        grid = np.delete(grid, -1, 1)
+        column_sum = column_sum[:-1]
+
+    while not row_sum[-2]:
+        grid = np.delete(grid, -1, 0)
+        row_sum = row_sum[:-1]
+    
+    return grid
+
 def printify(nested_arrays):
 
     string = ''
@@ -15,12 +40,12 @@ def printify(nested_arrays):
 
     return string
 
-def random_ore_generator(height, width):
-    arr = np.random.uniform(size=(int(height/4)+1, int(width/4)+1))
+def random_ore_generator(height, width, resolution):
+    arr = np.random.uniform(size=(int(height/resolution)+1, int(width/resolution)+1))
 
-    arr = [np.ndarray.tolist(zoom(arr, 4))[x][:width] for x in range(height)]
+    arr = [np.ndarray.tolist(zoom(arr, resolution))[x][:width] for x in range(height)]
     
-    value = (np.random.random()*0.3)+0.2
+    value = (np.random.random()*0.3)+0.4
 
     for y in range(height):
         for x in range(width):
@@ -88,7 +113,7 @@ def binary_search(placeables, ore_grid, drill_grid, drills, last_value, count, d
 
         if check_each_drill(flooded_grid, new_drills, dimentions):
             increase = ore_grid[y][x] + ore_grid[y+1][x] + ore_grid[y][x+1] + ore_grid[y+1][x+1] - 0.5
-            return [(new_drill_grid, new_drills, last_value+increase, count),(drill_grid, drills, last_value, count )]
+            return [(new_drill_grid, new_drills, last_value+increase, count),(drill_grid, drills, last_value, count)]
         else:
             return [(drill_grid, drills, last_value, count)]
     else:
@@ -97,10 +122,10 @@ def binary_search(placeables, ore_grid, drill_grid, drills, last_value, count, d
 def worker_loop(task_queue, mylock, current_best_value, best_layout):
     while True:
         try:
-            input_argument = task_queue.get(timeout=5)
+            input_argument = task_queue.get(timeout=1.5) # drill_grid, drills, last_value, count
         except:
             break
-
+        
         print(input_argument[3])
 
         if input_argument[3] >= len(placeables):
@@ -111,21 +136,27 @@ def worker_loop(task_queue, mylock, current_best_value, best_layout):
                         best_layout[i] = input_argument[1][i]
                     for i in range(len(input_argument[1]),len(placeables)):
                         best_layout[i] = -1
-        else:
+        elif (len(placeables)-input_argument[3])*3.5+input_argument[2] > current_best_value.value:
             results = binary_search(placeables, ore_grid, *input_argument, dimentions)
             for result in results:
                 task_queue.put(result)
 
-dimentions = 10,10
-ore_grid = np.array(random_ore_generator(*dimentions))
+#start here
+ore_grid = [50]
 
+while np.sum(ore_grid) > 25:
+    ore_grid = trim_grid(np.array(random_ore_generator(15,15, resolution=5)))
+
+dimentions = len(ore_grid),len(ore_grid[0])
 placeables = []
 
+#find the coordinates where its possible to place a drill
 for position in range((dimentions[0]-1)*(dimentions[1]-1)):
     y, x = int(position/(dimentions[1]-1)), position%(dimentions[1]-1)
     if ore_grid[y][x] or ore_grid[y][x+1] or ore_grid[y+1][x] or ore_grid[y+1][x+1]:
         placeables.append(position)
 
+#output the start parameters to the monitoring file incase the placeable count is too high
 with open('binary_tree_traversal/binary_tree_output.txt', 'w') as file:
     file.write(printify(ore_grid) + '\n' + str(len(placeables)) + '\n\n')
 
@@ -140,7 +171,7 @@ locking = multiprocessing.Lock()
 current_best_value = multiprocessing.Value('f',0)
 best_layout = multiprocessing.Array('i',[-1]*len(placeables))
 
-num_workers = 8
+num_workers = 16
 processes = [multiprocessing.Process(target=worker_loop, args=(branches_to_explore,locking, current_best_value, best_layout)) for _ in range(num_workers)]
 
 for p in processes:
